@@ -34,3 +34,17 @@ This repo documents that finding as a writeup.
 **Termux** is a terminal environment for Android with a shell, package manager, and scripting tools (bash, Python, etc.). This project uses it to run the recording scripts and handle the pen button input, connecting the button event to the recording command.
 
 Termux runs the scripts, and Shizuku provides the Android permissions they need. Termux alone can't reach those system APIs.
+
+## Overview of how the script works
+Setup: sets RISH_APPLICATION_ID, takes a wake lock so the script keeps running with the screen off, and creates the PenRecordings folder and log path.
+Capture: deletes the old capture file, then starts getevent on event8 through rish in the background, writing straight to /sdcard/pen_ev.txt.
+
+Follow: tail -F reads new lines from that file, and grep keeps only the MSC_SCAN button lines.
+
+Filter: for each event, anything other than a double press (0601) is logged as ignored, and a double press within 3 seconds of the last toggle is also ignored.
+
+Check state: asks termux-microphone-record -i whether it's recording, retries once after 1 second if the answer is empty, and gives up and logs it if still empty.
+
+Toggle: if recording, it stops and logs "stop". If idle, it starts a no-limit recording to a timestamped .m4a and logs "start" only if "Recording started" appears, otherwise "start FAILED".
+
+Reset: it saves the time of this toggle for the debounce, then loops back to wait for the next press.
