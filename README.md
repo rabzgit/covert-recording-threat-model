@@ -1,7 +1,7 @@
 # covert-recording-threat-model
 
 ## Key Takeaway:
-A tablet is a seemingly innocuous device, however device can be setup to secretly (i.e: when the screen is off / tablet is in "sleep" mode) start an audio recording on the tablet from 10 meters away and save it to the disk. 
+A tablet is a seemingly innocuous device, however can be setup to secretly (i.e: when the screen is off / tablet is in "sleep" mode) start an audio recording on the tablet from 10 meters away and save it to the disk. 
 
 ## Intro 
 The [Lenovo Tab M11](https://www.lenovo.com/us/en/p/tablets/android-tablets/lenovo-tab-series/lenovo-tab-m11-11-inch-mtk/len103l0022) can be used with the [Lenovo Tab Pen Plus](https://www.lenovo.com/us/en/p/accessories-and-software/tablet-accessories/tablet-accessories_android-tablets/zg38c09172?orgRef=https%253A%252F%252Fwww.bing.com%252F).
