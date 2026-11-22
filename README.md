@@ -37,6 +37,7 @@ Termux runs the scripts, and Shizuku provides the Android permissions they need.
 
 ## Overview of how the script works
 Setup: sets RISH_APPLICATION_ID, takes a wake lock so the script keeps running with the screen off, and creates the PenRecordings folder and log path.
+
 Capture: deletes the old capture file, then starts getevent on event8 through rish in the background, writing straight to /sdcard/pen_ev.txt.
 
 Follow: tail -F reads new lines from that file, and grep keeps only the MSC_SCAN button lines.
