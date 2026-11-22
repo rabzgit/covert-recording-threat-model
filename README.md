@@ -1,5 +1,9 @@
 # covert-recording-threat-model
 
+## Key Takeaway:
+A tablet is a seemingly innocuous device, however device can be setup to secretly (i.e: when the screen is off / tablet is in "sleep" mode) start an audio recording on the tablet from 10 meters away and save it to the disk. 
+
+## Intro 
 The [Lenovo Tab M11](https://www.lenovo.com/us/en/p/tablets/android-tablets/lenovo-tab-series/lenovo-tab-m11-11-inch-mtk/len103l0022) can be used with the [Lenovo Tab Pen Plus](https://www.lenovo.com/us/en/p/accessories-and-software/tablet-accessories/tablet-accessories_android-tablets/zg38c09172?orgRef=https%253A%252F%252Fwww.bing.com%252F).
 
 The pen, that connects to the tablet via Bluetooth, comes with a button.
@@ -7,22 +11,26 @@ The pen, that connects to the tablet via Bluetooth, comes with a button.
 
 ## What the button is normally for
 
-On Windows PCs, Lenovo's pen button is fully configurable (single press, double press, long press each map to an app or shortcut, e.g. OneNote, Sketchpad, screenshot capture). On an Android tablet like the Tab M11, there's no such settings panel: Android's **Settings → Pen & keyboard** only offers a short fixed list of actions, and third-party remapping apps (e.g. Button Mapper) don't detect the press at all. The only way to see the press is at the raw input level (`/dev/input/event*`), which needs shell access (Shizuku or adb) — a regular app can't read it.
+On an Android tablet like the Tab M11: Android's **Settings → Pen & keyboard** only offers a short fixed list of actions, and third-party remapping apps (e.g. Button Mapper) don't detect the press at all. 
 
-## Bluetooth connection and the "lost pen" alert
+## Bluetooth connection 
 
-The pen auto-pairs to the tablet over Bluetooth and ships with a built-in **anti-lost alert**: if the Bluetooth link drops, the tablet pops a notification. Lenovo doesn't publish a specific working distance — it's ordinary Bluetooth Low Energy range (roughly 10 m / 30 ft line-of-sight, less through walls/pockets), and once you're out of that range the link drops and the alert fires.
-
-One testing wrinkle worth noting: **holding the button for several seconds forces the pen to disconnect and re-pair** (its own reset/pairing gesture), which triggers the exact same "lost pen" alert as walking out of range. The two are easy to confuse unless you're watching for which one actually happened.
+The pen auto-pairs to the tablet over Bluetooth. Lenovo doesn't publish a specific working distance — it's ordinary Bluetooth Low Energy range (roughly 10 m / 30 ft line-of-sight, less through walls/pockets)
 
 ## Battery
 
 - 80 mAh Li-ion cell, rated up to 35 hours of use per charge
-- USB-C charging, with Lenovo's datasheet quoting ~25% charge in under 15 minutes
-- Charging port is charge-only — no data/firmware access over USB-C
 
-## What this repo is (and isn't)
+## What this repo is 
 
 This started as a hands-free "press the pen button, start recording" convenience script, then became a small threat-model exercise: **a stylus button most people never think about can be read, at the raw input level, by anything with shell access on the device — including to silently arm a microphone.**
 
-This repo documents that finding (what was tested, what worked, what didn't) as a writeup, **not** as a ready-to-run tool. The assembled trigger script, exact device identifiers, and step-by-step reproduction commands are intentionally left out, so this stays a documented finding rather than a working covert-recording recipe someone could point at another person's device.
+This repo documents that finding as a writeup. 
+
+## Components
+
+**Shizuku** is an Android app that lets other apps use system-level APIs without rooting the device. It runs as a background service that you start once (over Wireless Debugging or USB/ADB) and then authorize per app. This project uses it to give the recorder system-level access that a normal app can't get.
+
+**Termux** is a terminal environment for Android with a shell, package manager, and scripting tools (bash, Python, etc.). This project uses it to run the recording scripts and handle the pen button input, connecting the button event to the recording command.
+
+Termux runs the scripts, and Shizuku provides the Android permissions they need. Termux alone can't reach those system APIs.
