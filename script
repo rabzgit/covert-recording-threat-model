@@ -1,0 +1,46 @@
+cat > ~/pen_rec.sh <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+export RISH_APPLICATION_ID=com.termux
+termux-wake-lock
+mkdir -p ~/storage/shared/PenRecordings
+L=~/pen_events.log
+last=0
+rm -f /sdcard/pen_ev.txt
+nohup ~/rish -c 'getevent -l /dev/input/event8 > /sdcard/pen_ev.txt' >/dev/null 2>&1 </dev/null &
+sleep 1
+tail -n 0 -F /sdcard/pen_ev.txt | grep --line-buffered 'MSC_SCAN' | while read -r line; do
+  case "$line" in
+    *000c0601*) ;;
+    *) echo "$(date +%T) other press ignored" >> $L; continue ;;
+  esac
+  now=$(date +%s)
+  if [ $((now-last)) -lt 3 ]; then
+    echo "$(date +%T) hold too soon, ignored" >> $L
+    continue
+  fi
+  st=$(timeout 12 termux-microphone-record -i 2>&1)
+  if [ -z "$st" ]; then
+    sleep 1
+    st=$(timeout 12 termux-microphone-record -i 2>&1)
+  fi
+  if [ -z "$st" ]; then
+    echo "$(date +%T) hold, status empty, did nothing" >> $L
+    continue
+  fi
+  if echo "$st" | grep -q '"isRecording": true'; then
+    timeout 12 termux-microphone-record -q >> $L 2>&1
+    echo "$(date +%T) stop" >> $L
+  else
+    f=~/storage/shared/PenRecordings/pen_$(date +%Y%m%d_%H%M%S).m4a
+    out=$(timeout 12 termux-microphone-record -l 0 -f $f 2>&1)
+    echo "$out" >> $L
+    if echo "$out" | grep -q "Recording started"; then
+      echo "$(date +%T) start: $f" >> $L
+    else
+      echo "$(date +%T) start FAILED" >> $L
+    fi
+  fi
+  last=$(date +%s)
+done
+EOF
+chmod +x ~/pen_rec.sh
